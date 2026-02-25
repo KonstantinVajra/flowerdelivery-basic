@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404
 from .forms import OrderForm
+from .services import send_telegram_notification
 
 def product_list(request):
     products = Product.objects.all()
@@ -37,6 +38,16 @@ def create_order(request, product_id):
             order = form.save(commit=False)
             order.product = product
             order.save()
+
+            message = (
+                f"Новый заказ!\n"
+                f"Товар: {product.name}\n"
+                f"Имя: {order.customer_name}\n"
+                f"Телефон: {order.customer_phone}\n"
+                f"Email: {order.customer_email}"
+            )
+
+            send_telegram_notification(message)
             return redirect("order_success")
     else:
         form = OrderForm()
